@@ -741,7 +741,6 @@ class Product(Resource):
     def find_product(codigo):
         print(codigo)
         for x in products:
-            print(x['codigo'] )
             if x['codigo'] == codigo:
                 return x
         return None
@@ -753,10 +752,19 @@ class Product(Resource):
         return {'message': 'Produto not found'}, 404  # not found
 
     def post(self, codigo):
+
+
+        if Product.find_product(codigo):
+            return {"message":"Codigo '{}' alredy existis." .format(codigo)}, 400 # Bad Request
+
         dados = Product.argumentos.parse_args()
         product_object = ProductModel(codigo, **dados)
         new_product = product_object.json()
-        products.append(new_product)
+
+        try:
+            products.append(new_product)
+        except:
+            return {'messege': 'An internal error ocurred trying to save produto'}, 500 # An server error
         return new_product, 200
 
     def put(self, codigo):
@@ -767,10 +775,18 @@ class Product(Resource):
         if prod:
             prod.update(new_product)
             return new_product, 200
-        products.append(new_product)
-        return new_product, 201
+        try:
+          products.append(new_product)
+        except:
+          return {'messege': 'An internal error ocurred trying to save produto'}, 500  # An server error
+        return new_product, 200
 
     def delete(self, codigo):
-        global products
-        products = [product for product in products if product['codigo'] != codigo]
-        return {'message': 'Product deleted. '}
+      prod = Product.find_product(codigo)
+      if prod:
+        try:
+          products.remove(prod)
+        except:
+          return {'message': 'An error ocurred trying to delete produto'}, 500  # An server error
+        return {'message': 'Produto Deleted.'}
+      return {'messege': 'Produto not found.'}, 404
