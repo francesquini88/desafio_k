@@ -753,7 +753,6 @@ class Product(Resource):
 
     def post(self, codigo):
 
-
         if Product.find_product(codigo):
             return {"message":"Codigo '{}' alredy existis." .format(codigo)}, 400 # Bad Request
 
